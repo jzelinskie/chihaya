@@ -20,6 +20,7 @@ import (
 	_ "github.com/chihaya/chihaya/server/prometheus"
 	_ "github.com/chihaya/chihaya/server/store"
 	_ "github.com/chihaya/chihaya/server/store/memory"
+	_ "github.com/chihaya/chihaya/server/udp"
 
 	// Middleware
 	_ "github.com/chihaya/chihaya/middleware/deniability"

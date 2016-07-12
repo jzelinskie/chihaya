@@ -56,6 +56,10 @@ chihaya:
         read_timeout: 10s
         write_timeout: 10s
 
-#    - name: udp
-#      config:
-#        addr: localhost:6883
+    - name: udp
+      config:
+        addr: 0.0.0.0:6883
+        read_buffer_size: 0
+        private_key: |
+          private key bytes go here
+        allow_ip_spoofing: true

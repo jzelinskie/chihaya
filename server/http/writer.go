@@ -70,8 +70,8 @@ func writeAnnounceResponse(w http.ResponseWriter, resp *chihaya.AnnounceResponse
 
 func writeScrapeResponse(w http.ResponseWriter, resp *chihaya.ScrapeResponse) error {
 	filesDict := bencode.NewDict()
-	for infohash, scrape := range resp.Files {
-		filesDict[string(infohash[:])] = bencode.Dict{
+	for _, scrape := range resp.Files {
+		filesDict[string(scrape.InfoHash[:])] = bencode.Dict{
 			"complete":   scrape.Complete,
 			"incomplete": scrape.Incomplete,
 		}

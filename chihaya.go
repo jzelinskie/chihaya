@@ -128,13 +128,15 @@ type ScrapeRequest struct {
 
 // ScrapeResponse represents the parameters used to create a scrape response.
 type ScrapeResponse struct {
-	Files map[InfoHash]Scrape
+	Files []Scrape
 }
 
 // Scrape represents the state of a swarm that is returned in a scrape response.
 type Scrape struct {
-	Complete   int32
-	Incomplete int32
+	InfoHash   InfoHash
+	Complete   uint32
+	Snatches   uint32
+	Incomplete uint32
 }
 
 // Peer represents the connection details of a peer that is returned in an
