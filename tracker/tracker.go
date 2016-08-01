@@ -76,7 +76,7 @@ func (t *Tracker) HandleAnnounce(req *chihaya.AnnounceRequest) (*chihaya.Announc
 // returns the result.
 func (t *Tracker) HandleScrape(req *chihaya.ScrapeRequest) (*chihaya.ScrapeResponse, error) {
 	resp := &chihaya.ScrapeResponse{
-		Files: make(map[chihaya.InfoHash]chihaya.Scrape),
+		Files: make([]chihaya.Scrape, 0),
 	}
 	err := t.handleScrape(t.cfg, req, resp)
 	return resp, err
