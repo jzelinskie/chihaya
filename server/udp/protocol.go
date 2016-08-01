@@ -90,7 +90,9 @@ func (s *Server) handlePacket(packet []byte, addr *net.UDPAddr) (response []byte
 			return
 		}
 
-		writer.WriteConnectionID(NewConnectionID(addr.IP, time.Now(), s.config.PrivateKey))
+		cid := NewConnectionID(addr.IP, time.Now(), s.config.PrivateKey)
+		writer.WriteConnectionID(cid)
+		ReturnConnectionIDBuffer(cid)
 		return
 
 	case announceActionID:

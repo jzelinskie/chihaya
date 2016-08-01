@@ -6,10 +6,13 @@ package udp
 
 import (
 	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/binary"
 	"net"
 	"time"
+
+	"github.com/minio/sha256-simd"
+
+	"github.com/chihaya/chihaya/pkg/bytepool"
 )
 
 const (
@@ -22,6 +25,8 @@ const (
 	maxClockSkew = 10 * time.Second
 )
 
+var connectionIDPool = bytepool.New(8)
+
 // NewConnectionID creates a new 8 byte connection identifier for UDP packets
 // as described by BEP 15.
 //
@@ -32,8 +37,12 @@ const (
 // Truncated HMAC is known to be safe for 2^(-n) where n is the size in bits
 // of the truncated HMAC token. In this use case we have 32 bits, thus a
 // forgery probability of approximately 1 in 4 billion.
+//
+// The byte-slice returned by this function can be reused if it is returned
+// by calling ReturnConnectionIDBuffer after being used. This is not strictly
+// necessary, but relieves pressure from the garbage collector.
 func NewConnectionID(ip net.IP, now time.Time, key string) []byte {
-	buf := make([]byte, 8)
+	buf := connectionIDPool.Get()[:8]
 	binary.BigEndian.PutUint32(buf, uint32(now.UTC().Unix()))
 
 	mac := hmac.New(sha256.New, []byte(key))
@@ -43,6 +52,15 @@ func NewConnectionID(ip net.IP, now time.Time, key string) []byte {
 	copy(buf[4:], macBytes)
 
 	return buf
+}
+
+// ReturnConnectionIDBuffer returns the given byte-slice to be reused as a
+// buffer for connection IDs. It must not be used after being returned.
+func ReturnConnectionIDBuffer(buf []byte) {
+	if cap(buf) < 8 {
+		return
+	}
+	connectionIDPool.Put(buf)
 }
 
 // ValidConnectionID determines whether a connection identifier is legitimate.

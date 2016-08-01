@@ -91,7 +91,6 @@ func (s *Server) serve() error {
 		// Read a UDP packet into a reusable buffer.
 		buffer := pool.Get()
 		buffer = buffer[:cap(buffer)]
-		sock.SetReadDeadline(time.Now().Add(time.Second))
 		start := time.Now()
 		n, addr, err := sock.ReadFromUDP(buffer)
 		if err != nil {
@@ -139,12 +138,7 @@ func (s *Server) Start() {
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
-		for {
-			select {
-			case <-s.closing:
-				return
-			}
-		}
+		<-s.closing
 	}()
 
 	if err := s.serve(); err != nil {
