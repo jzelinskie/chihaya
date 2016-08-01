@@ -105,6 +105,7 @@ func (s *httpServer) serveAnnounce(w http.ResponseWriter, r *http.Request, p htt
 	}
 
 	resp, err := s.tkr.HandleAnnounce(req)
+	defer s.tkr.ReturnAnnounceResponse(resp)
 	if err != nil {
 		writeError(w, err)
 		return

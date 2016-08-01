@@ -24,6 +24,7 @@ import (
 
 func init() {
 	server.Register("udp", constructor)
+	prometheus.MustRegister(promResponseDurationMilliseconds)
 }
 
 var promResponseDurationMilliseconds = prometheus.NewHistogramVec(
@@ -89,7 +90,7 @@ func (s *Server) serve() error {
 
 		// Read a UDP packet into a reusable buffer.
 		buffer := pool.Get()
-		sock.SetReadDeadline(time.Now().Add(time.Second))
+		buffer = buffer[:cap(buffer)]
 		start := time.Now()
 		n, addr, err := sock.ReadFromUDP(buffer)
 		if err != nil {
@@ -107,8 +108,6 @@ func (s *Server) serve() error {
 			continue
 		}
 
-		log.Println("Got UDP packet")
-
 		s.wg.Add(1)
 		go func(start time.Time) {
 			defer s.wg.Done()
@@ -119,7 +118,6 @@ func (s *Server) serve() error {
 			if len(response) > 0 {
 				sock.WriteToUDP(response, addr)
 			}
-			log.Printf("Handled UDP packet: %s, %s, %s\n", response, action, err)
 
 			// Record to Prometheus the time in milliseconds to receive, handle, and
 			// respond to the request.
@@ -140,12 +138,7 @@ func (s *Server) Start() {
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
-		for {
-			select {
-			case <-s.closing:
-				return
-			}
-		}
+		<-s.closing
 	}()
 
 	if err := s.serve(); err != nil {

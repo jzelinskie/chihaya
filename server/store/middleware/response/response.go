@@ -47,10 +47,12 @@ func responseScrapeClient(next tracker.ScrapeHandler) tracker.ScrapeHandler {
 	return func(cfg *chihaya.TrackerConfig, req *chihaya.ScrapeRequest, resp *chihaya.ScrapeResponse) (err error) {
 		storage := store.MustGetStore()
 		for _, infoHash := range req.InfoHashes {
-			resp.Files[infoHash] = chihaya.Scrape{
-				Complete:   int32(storage.NumSeeders(infoHash)),
-				Incomplete: int32(storage.NumLeechers(infoHash)),
-			}
+			resp.Files = append(resp.Files,
+				chihaya.Scrape{
+					InfoHash:   infoHash,
+					Complete:   uint32(storage.NumSeeders(infoHash)),
+					Incomplete: uint32(storage.NumLeechers(infoHash)),
+				})
 		}
 
 		return next(cfg, req, resp)
