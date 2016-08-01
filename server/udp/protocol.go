@@ -169,7 +169,10 @@ func parseAnnounce(cfg *udpConfig, packet []byte, ip net.IP) (*chihaya.AnnounceR
 		ip = ipv4
 	}
 
-	numWant := binary.BigEndian.Uint32(packet[92:96])
+	numWant := int32(binary.BigEndian.Uint32(packet[92:96]))
+	if numWant <= 0 {
+		numWant = 0
+	}
 	port := binary.BigEndian.Uint16(packet[96:98])
 
 	ipv6, params, err := handleOptionalParameters(cfg, packet)
