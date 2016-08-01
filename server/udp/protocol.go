@@ -108,11 +108,13 @@ func (s *Server) handlePacket(packet []byte, addr *net.UDPAddr) (response []byte
 		var resp *chihaya.AnnounceResponse
 		resp, err = s.tracker.HandleAnnounce(request)
 		if err != nil {
+			s.tracker.ReturnAnnounceResponse(resp)
 			writer.WriteError(err)
 			return
 		}
 
 		writer.WriteAnnounce(resp)
+		s.tracker.ReturnAnnounceResponse(resp)
 		return
 
 	case scrapeActionID:
